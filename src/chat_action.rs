@@ -1,7 +1,7 @@
 use vec1::Vec1;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub enum Badges {
     MEMBER,
     VERIFIED,
@@ -9,7 +9,7 @@ pub enum Badges {
     MODERATOR
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub enum ChatAction {
     Message {
         id: String,
