@@ -2,6 +2,14 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 use crate::emoji::RegexPatterns;
 
+pub struct TextFieldDescriptor {
+    pub name: String,
+    pub min: u32,
+    pub max: u32,
+    pub step: u32,
+    pub value: u32
+}
+
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DetectorParams {
@@ -78,5 +86,65 @@ impl DetectorParams {
 
     pub fn regex() -> RegexPatterns {
         RegexPatterns::new()
+    }
+
+    pub fn avg_time_threshold(&self) -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_time_threshold".to_string(),
+            min: 1,
+            max: 120000,
+            step: 1,
+            value: self.avg_time_threshold
+        }
+    }
+
+    pub fn avg_time_min_message_count(&self) -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_time_min_message_count".to_string(),
+            min: 2,
+            max: 99,
+            step: 1,
+            value: self.avg_time_min_message_count
+        }
+    }
+
+    pub fn similarity_message_count(&self) -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "similarity_message_count".to_string(),
+            min: 2,
+            max: 99,
+            step: 1,
+            value: self.similarity_message_count
+        }
+    }
+
+    pub fn similarity_min_message_length(&self) -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "similarity_min_message_length".to_string(),
+            min: 1,
+            max: 300,
+            step: 1,
+            value: self.similarity_min_message_length
+        }
+    }
+
+    pub fn avg_length_threshold(&self) -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_length_threshold".to_string(),
+            min: 1,
+            max: 300,
+            step: 1,
+            value: self.avg_length_threshold
+        }
+    }
+
+    pub fn avg_length_message_count(&self) -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_length_message_count".to_string(),
+            min: 0,
+            max: 99,
+            step: 1,
+            value: self.avg_length_message_count
+        }
     }
 }
