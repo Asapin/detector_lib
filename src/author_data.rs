@@ -14,7 +14,7 @@ pub struct AuthorData {
     last_message_timestamp: u64,
     sent_messages: Vec<MessageData>,
     avg_delay: u32,
-    total_messages: u16,
+    total_messages: u32,
     avg_message_length: f32,
 }
 
@@ -61,7 +61,7 @@ impl AuthorData {
             return Some(Reason::TooLong(self.avg_message_length));
         }
 
-        if !detector_params.should_check_message(content.chars().count()) {
+        if !detector_params.should_check_message(content.chars().count() as u32) {
             return None;
         }
 

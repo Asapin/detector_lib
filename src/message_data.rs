@@ -93,8 +93,8 @@ impl MessageData {
         self.message = buf;
     }
 
-    pub fn count(&self) -> u16 {
-        self.count
+    pub fn count(&self) -> u32 {
+        self.count as u32
     }
 }
 
