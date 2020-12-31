@@ -1,7 +1,9 @@
 use std::borrow::Cow;
-
+use serde::{Deserialize, Serialize};
 use crate::emoji::RegexPatterns;
 
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DetectorParams {
     avg_time_threshold: u32,
     avg_time_min_message_count: u16,
@@ -9,6 +11,7 @@ pub struct DetectorParams {
     similarity_check_min_message_len: usize,
     avg_message_length_threshold: usize,
     avg_message_length_message_count: u16,
+    #[serde(skip, default = "DetectorParams::regex")]
     regex_patterns: RegexPatterns,
 }
 
@@ -71,5 +74,9 @@ impl DetectorParams {
 
     pub fn strip_message_from_emoji<'t>(&self, message: &'t str) -> Cow<'t, str> {
         self.regex_patterns.clean_message(message)
+    }
+
+    pub fn regex() -> RegexPatterns {
+        RegexPatterns::new()
     }
 }
