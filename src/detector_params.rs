@@ -7,7 +7,62 @@ pub struct TextFieldDescriptor {
     pub min: u32,
     pub max: u32,
     pub step: u32,
-    pub value: u32
+}
+
+impl TextFieldDescriptor {
+    pub fn avg_time_threshold() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_time_threshold".to_string(),
+            min: 1,
+            max: 120000,
+            step: 1
+        }
+    }
+
+    pub fn avg_time_min_message_count() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_time_min_message_count".to_string(),
+            min: 2,
+            max: 99,
+            step: 1
+        }
+    }
+
+    pub fn similarity_message_count() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "similarity_message_count".to_string(),
+            min: 2,
+            max: 99,
+            step: 1
+        }
+    }
+
+    pub fn similarity_min_message_length() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "similarity_min_message_length".to_string(),
+            min: 1,
+            max: 300,
+            step: 1
+        }
+    }
+
+    pub fn avg_length_threshold() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_length_threshold".to_string(),
+            min: 1,
+            max: 300,
+            step: 1
+        }
+    }
+
+    pub fn avg_length_message_count() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "avg_length_message_count".to_string(),
+            min: 0,
+            max: 99,
+            step: 1
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -88,63 +143,27 @@ impl DetectorParams {
         RegexPatterns::new()
     }
 
-    pub fn avg_time_threshold(&self) -> TextFieldDescriptor {
-        TextFieldDescriptor {
-            name: "avg_time_threshold".to_string(),
-            min: 1,
-            max: 120000,
-            step: 1,
-            value: self.avg_time_threshold
-        }
+    pub fn avg_time_threshold(&self) -> (u32, TextFieldDescriptor) {
+        (self.avg_time_threshold, TextFieldDescriptor::avg_time_threshold())
     }
 
-    pub fn avg_time_min_message_count(&self) -> TextFieldDescriptor {
-        TextFieldDescriptor {
-            name: "avg_time_min_message_count".to_string(),
-            min: 2,
-            max: 99,
-            step: 1,
-            value: self.avg_time_min_message_count
-        }
+    pub fn avg_time_min_message_count(&self) -> (u32, TextFieldDescriptor) {
+        (self.avg_time_min_message_count, TextFieldDescriptor::avg_time_min_message_count())
     }
 
-    pub fn similarity_message_count(&self) -> TextFieldDescriptor {
-        TextFieldDescriptor {
-            name: "similarity_message_count".to_string(),
-            min: 2,
-            max: 99,
-            step: 1,
-            value: self.similarity_message_count
-        }
+    pub fn similarity_message_count(&self) -> (u32, TextFieldDescriptor) {
+        (self.similarity_message_count, TextFieldDescriptor::similarity_message_count())
     }
 
-    pub fn similarity_min_message_length(&self) -> TextFieldDescriptor {
-        TextFieldDescriptor {
-            name: "similarity_min_message_length".to_string(),
-            min: 1,
-            max: 300,
-            step: 1,
-            value: self.similarity_min_message_length
-        }
+    pub fn similarity_min_message_length(&self) -> (u32, TextFieldDescriptor) {
+        (self.similarity_min_message_length, TextFieldDescriptor::similarity_min_message_length())
     }
 
-    pub fn avg_length_threshold(&self) -> TextFieldDescriptor {
-        TextFieldDescriptor {
-            name: "avg_length_threshold".to_string(),
-            min: 1,
-            max: 300,
-            step: 1,
-            value: self.avg_length_threshold
-        }
+    pub fn avg_length_threshold(&self) -> (u32, TextFieldDescriptor) {
+        (self.avg_length_threshold, TextFieldDescriptor::avg_length_threshold())
     }
 
-    pub fn avg_length_message_count(&self) -> TextFieldDescriptor {
-        TextFieldDescriptor {
-            name: "avg_length_message_count".to_string(),
-            min: 0,
-            max: 99,
-            step: 1,
-            value: self.avg_length_message_count
-        }
+    pub fn avg_length_message_count(&self) -> (u32, TextFieldDescriptor) {
+        (self.avg_length_message_count, TextFieldDescriptor::avg_length_message_count())
     }
 }
