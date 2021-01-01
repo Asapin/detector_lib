@@ -1,23 +1,23 @@
 use std::collections::{HashMap, HashSet};
-
-use crate::author_data::Reason;
-
+use crate::{DecisionRefiner, author_data::Reason};
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
 
-pub struct StreamData {
+pub struct StreamData<T: DecisionRefiner> {
     authors_to_report: HashMap<String, Reason>,
     superchated_authors: HashSet<String>,
     authors: HashMap<String, AuthorData>,
-    slow_mode: u32
+    slow_mode: u32,
+    decision_refiner: T
 }
 
-impl StreamData {
-    pub fn new() -> Self {
+impl <T> StreamData<T> where T: DecisionRefiner {
+    pub fn new(decision_refiner: T) -> Self {
        StreamData {
            authors_to_report: HashMap::with_capacity(100),
            superchated_authors: HashSet::with_capacity(100),
            authors: HashMap::with_capacity(500),
-           slow_mode: 0
+           slow_mode: 0,
+           decision_refiner
        }
     }
 
@@ -50,8 +50,10 @@ impl StreamData {
                     match self.authors.get_mut(&author) {
                         Some(author_data) => {
                             if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                                self.authors_to_report.insert(author, reason);
-                                result.insert(id);
+                                if self.decision_refiner.refine(&author) {
+                                    self.authors_to_report.insert(author, reason);
+                                    result.insert(id);
+                                }
                             }
                         }
                         None => {

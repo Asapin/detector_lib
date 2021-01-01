@@ -11,17 +11,21 @@ mod message_data;
 mod stream_data;
 mod emoji;
 
-pub struct Detector {
-    stream_data: StreamData,
+pub trait DecisionRefiner {
+    fn refine(&mut self, author_channel: &str) -> bool;
+}
+
+pub struct Detector<T: DecisionRefiner> {
+    stream_data: StreamData<T>,
     params: DetectorParams,
     message_ids_to_report: HashSet<String>,
 }
 
-impl Detector {
-    pub fn new(params: DetectorParams) -> Detector {
+impl <T> Detector<T> where T: DecisionRefiner {
+    pub fn new(params: DetectorParams, decision_refiner: T) -> Self {
         Detector {
             params,
-            stream_data: StreamData::new(),
+            stream_data: StreamData::new(decision_refiner),
             message_ids_to_report: HashSet::with_capacity(100),
         }
     }
