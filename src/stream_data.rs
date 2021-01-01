@@ -1,32 +1,44 @@
 use std::collections::{HashMap, HashSet};
-use crate::{DecisionRefiner, author_data::Reason};
+use crate::author_data::Reason;
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
 
-pub struct StreamData<T: DecisionRefiner> {
+pub struct ProcessingResult {
+    pub message_id: String,
+    pub author: String
+}
+
+impl ProcessingResult {
+    fn new(message_id: String, author: String) -> Self {
+        ProcessingResult {
+            message_id,
+            author
+        }
+    }
+}
+
+pub struct StreamData {
     authors_to_report: HashMap<String, Reason>,
     superchated_authors: HashSet<String>,
     authors: HashMap<String, AuthorData>,
     slow_mode: u32,
-    decision_refiner: T
 }
 
-impl <T> StreamData<T> where T: DecisionRefiner {
-    pub fn new(decision_refiner: T) -> Self {
+impl StreamData {
+    pub fn new() -> Self {
        StreamData {
            authors_to_report: HashMap::with_capacity(100),
            superchated_authors: HashSet::with_capacity(100),
            authors: HashMap::with_capacity(500),
            slow_mode: 0,
-           decision_refiner
        }
     }
 
-    pub async fn process_messages(
+    pub fn process_messages(
         &mut self,
         detector_params: &DetectorParams,
         messages: Vec<ChatAction>
-    ) -> HashSet<String> {
-        let mut result = HashSet::new();
+    ) -> Vec<ProcessingResult> {
+        let mut result = Vec::new();
         for message in messages.into_iter() {
             match message {
                 ChatAction::Message { 
@@ -41,7 +53,7 @@ impl <T> StreamData<T> where T: DecisionRefiner {
                     }
 
                     if self.authors_to_report.contains_key(&author) {
-                        result.insert(id);
+                        result.push(ProcessingResult::new(id, author));
                         continue;
                     }
 
@@ -50,10 +62,8 @@ impl <T> StreamData<T> where T: DecisionRefiner {
                     match self.authors.get_mut(&author) {
                         Some(author_data) => {
                             if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                                if self.decision_refiner.refine(&author).await {
-                                    self.authors_to_report.insert(author, reason);
-                                    result.insert(id);
-                                }
+                                self.authors_to_report.insert(author.clone(), reason);
+                                result.push(ProcessingResult::new(id, author));
                             }
                         }
                         None => {
