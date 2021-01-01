@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use author_data::Reason;
-use stream_data::ProcessingResult;
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
 
 pub mod chat_action;
@@ -9,6 +8,20 @@ mod author_data;
 mod message_data;
 mod stream_data;
 mod emoji;
+
+pub struct ProcessingResult {
+    pub message_id: String,
+    pub author: String
+}
+
+impl ProcessingResult {
+    fn new(message_id: String, author: String) -> Self {
+        ProcessingResult {
+            message_id,
+            author
+        }
+    }
+}
 
 pub struct Detector {
     stream_data: StreamData,

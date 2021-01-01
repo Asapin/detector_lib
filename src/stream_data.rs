@@ -1,20 +1,6 @@
 use std::collections::{HashMap, HashSet};
-use crate::author_data::Reason;
+use crate::{ProcessingResult, author_data::Reason};
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
-
-pub struct ProcessingResult {
-    pub message_id: String,
-    pub author: String
-}
-
-impl ProcessingResult {
-    fn new(message_id: String, author: String) -> Self {
-        ProcessingResult {
-            message_id,
-            author
-        }
-    }
-}
 
 pub struct StreamData {
     authors_to_report: HashMap<String, Reason>,
