@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
-
+use async_trait::async_trait;
 use author_data::Reason;
-
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
 
 pub mod chat_action;
@@ -11,8 +10,9 @@ mod message_data;
 mod stream_data;
 mod emoji;
 
+#[async_trait]
 pub trait DecisionRefiner {
-    fn refine(&mut self, author_channel: &str) -> bool;
+    async fn refine(&mut self, author_channel: &str) -> bool;
 }
 
 pub struct Detector<T: DecisionRefiner> {
@@ -30,7 +30,7 @@ impl <T> Detector<T> where T: DecisionRefiner {
         }
     }
 
-    pub fn process_messages(&mut self, mut actions: Vec<ChatAction>) {
+    pub async fn process_messages(&mut self, mut actions: Vec<ChatAction>) {
         actions.sort_unstable_by_key(|action| {
             match action {
                 ChatAction::Message { 
@@ -49,7 +49,8 @@ impl <T> Detector<T> where T: DecisionRefiner {
 
         let message_ids = self
             .stream_data
-            .process_messages(&self.params, actions);
+            .process_messages(&self.params, actions)
+            .await;
 
         if !message_ids.is_empty() {
             self.message_ids_to_report.reserve(message_ids.len());

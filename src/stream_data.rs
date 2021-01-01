@@ -21,7 +21,7 @@ impl <T> StreamData<T> where T: DecisionRefiner {
        }
     }
 
-    pub fn process_messages(
+    pub async fn process_messages(
         &mut self,
         detector_params: &DetectorParams,
         messages: Vec<ChatAction>
@@ -50,7 +50,7 @@ impl <T> StreamData<T> where T: DecisionRefiner {
                     match self.authors.get_mut(&author) {
                         Some(author_data) => {
                             if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                                if self.decision_refiner.refine(&author) {
+                                if self.decision_refiner.refine(&author).await {
                                     self.authors_to_report.insert(author, reason);
                                     result.insert(id);
                                 }
