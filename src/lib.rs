@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use author_data::Reason;
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
+use serde::{Deserialize, Serialize};
 
 pub mod chat_action;
 pub mod detector_params;
@@ -9,6 +10,7 @@ mod message_data;
 mod stream_data;
 mod emoji;
 
+#[derive(Deserialize, Serialize)]
 pub struct ProcessingResult {
     pub message_id: String,
     pub author: String
