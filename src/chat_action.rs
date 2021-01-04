@@ -16,7 +16,8 @@ pub enum ChatAction {
         author: String,
         timestamp: u64,
         content: String,
-        badges: Option<Vec1<Badges>>
+        badges: Option<Vec1<Badges>>,
+        context_params: String
     },
     Support {
         author: String,

@@ -32,14 +32,15 @@ impl StreamData {
                     author, 
                     timestamp, 
                     content, 
-                    badges 
+                    badges ,
+                    context_params
                 } => {
                     if badges.is_some() || self.superchated_authors.contains(&author) {
                         continue;
                     }
 
                     if self.authors_to_report.contains_key(&author) {
-                        result.push(ProcessingResult::new(id, author));
+                        result.push(ProcessingResult::new(id, author, context_params));
                         continue;
                     }
 
@@ -49,7 +50,7 @@ impl StreamData {
                         Some(author_data) => {
                             if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
                                 self.authors_to_report.insert(author.clone(), reason);
-                                result.push(ProcessingResult::new(id, author));
+                                result.push(ProcessingResult::new(id, author, context_params));
                             }
                         }
                         None => {

@@ -13,14 +13,16 @@ mod emoji;
 #[derive(Deserialize, Serialize)]
 pub struct ProcessingResult {
     pub message_id: String,
-    pub author: String
+    pub author: String,
+    pub menu_param: String
 }
 
 impl ProcessingResult {
-    fn new(message_id: String, author: String) -> Self {
+    fn new(message_id: String, author: String, menu_param: String) -> Self {
         ProcessingResult {
             message_id,
-            author
+            author,
+            menu_param
         }
     }
 }
@@ -46,7 +48,8 @@ impl Detector {
                     author: _, 
                     timestamp, 
                     content: _, 
-                    badges: _ 
+                    badges: _,
+                    context_params: _,
                 } => *timestamp,
                 ChatAction::Support { 
                     author: _, 
