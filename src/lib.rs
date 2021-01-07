@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use author_data::Reason;
-use reg_date_checker::RegDateChecker;
+use reg_date_loader::RegDateLoader;
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
 
 pub mod chat_action;
 pub mod detector_params;
 pub mod reg_date;
-pub mod reg_date_checker;
+pub mod reg_date_loader;
 mod author_data;
 mod message_data;
 mod stream_data;
@@ -19,13 +19,13 @@ pub struct ProcessingResult {
     pub reason: Reason
 }
 
-pub struct Detector<T: RegDateChecker> {
+pub struct Detector<T: RegDateLoader> {
     stream_data: StreamData,
     params: DetectorParams,
     checker: T
 }
 
-impl <T: RegDateChecker> Detector<T> {
+impl <T: RegDateLoader> Detector<T> {
     pub fn new(params: DetectorParams, checker: T) -> Self {
         Detector {
             params,

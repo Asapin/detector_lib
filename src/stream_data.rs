@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use crate::{ProcessingResult, author_data::Reason, reg_date_checker::RegDateChecker};
+use crate::{ProcessingResult, author_data::Reason, reg_date_loader::RegDateLoader};
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
 
 pub struct StreamData {
@@ -19,10 +19,10 @@ impl StreamData {
        }
     }
 
-    pub async fn process_messages<T: RegDateChecker>(
+    pub async fn process_messages<T: RegDateLoader>(
         &mut self,
         detector_params: &DetectorParams,
-        reg_date_checker: &mut T,
+        reg_date_loader: &mut T,
         messages: Vec<ChatAction>
     ) -> Vec<ProcessingResult> {
         let mut result = Vec::new();
@@ -55,7 +55,7 @@ impl StreamData {
 
                     if let Some(author_data) = self.authors.get_mut(&author) {
                         if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                            let reg_date = reg_date_checker.check(&author).await;
+                            let reg_date = reg_date_loader.load(&author).await;
                             if detector_params.acc_too_young(&reg_date) {
                                 self.authors_to_report.insert(author.clone(), reason.clone());
                                 result.push(ProcessingResult {
@@ -86,7 +86,7 @@ impl StreamData {
                         continue;
                     }
 
-                    let reg_date = reg_date_checker.check(&author).await;
+                    let reg_date = reg_date_loader.load(&author).await;
                     if detector_params.acc_too_young(&reg_date) {
                         self.authors_to_report.insert(author, Reason::RetractedMessage);
                     }
