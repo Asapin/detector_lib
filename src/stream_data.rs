@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
-use crate::{ProcessingResult, author_data::Reason, reg_date_loader::RegDateLoader};
+use futures::Future;
+
+use crate::{ProcessingResult, author_data::Reason, reg_date::RegDate, reg_date_loader::RegDateLoader};
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
 
 pub struct StreamData {
@@ -19,12 +21,16 @@ impl StreamData {
        }
     }
 
-    pub async fn process_messages<T: RegDateLoader>(
+    pub async fn process_messages<F, Fut>(
         &mut self,
         detector_params: &DetectorParams,
-        reg_date_loader: &mut T,
+        reg_date_loader: &mut RegDateLoader<F, Fut>,
         messages: Vec<ChatAction>
-    ) -> Vec<ProcessingResult> {
+    ) -> Result<Vec<ProcessingResult>, String>
+    where
+        F: Fn(&str) -> Fut,
+        Fut: Future<Output = Result<RegDate, String>>
+    {
         let mut result = Vec::new();
         for message in messages.into_iter() {
             match message {
@@ -55,7 +61,7 @@ impl StreamData {
 
                     if let Some(author_data) = self.authors.get_mut(&author) {
                         if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                            let reg_date = reg_date_loader.load(&author).await;
+                            let reg_date = reg_date_loader.load_reg_date(&author).await?;
                             if detector_params.acc_too_young(&reg_date) {
                                 self.authors_to_report.insert(author.clone(), reason.clone());
                                 result.push(ProcessingResult {
@@ -86,7 +92,7 @@ impl StreamData {
                         continue;
                     }
 
-                    let reg_date = reg_date_loader.load(&author).await;
+                    let reg_date = reg_date_loader.load_reg_date(&author).await?;
                     if detector_params.acc_too_young(&reg_date) {
                         self.authors_to_report.insert(author, Reason::RetractedMessage);
                     }
@@ -94,7 +100,7 @@ impl StreamData {
             }
         }
 
-        result
+        Ok(result)
     }
 
     pub fn set_slow_mode(&mut self, new_delay: u32) {

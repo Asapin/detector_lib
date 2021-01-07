@@ -10,4 +10,4 @@ edition = "2018"
 serde = { version = "^1", features = ["derive"] }
 regex = "^1"
 strsim = "^0"
-async-trait = "^0.1"
+futures = "^0.3"

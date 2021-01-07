@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 use author_data::Reason;
+use futures::Future;
+use reg_date::RegDate;
 use reg_date_loader::RegDateLoader;
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
 
@@ -19,22 +21,30 @@ pub struct ProcessingResult {
     pub reason: Reason
 }
 
-pub struct Detector<T: RegDateLoader> {
+pub struct Detector<F, Fut>
+where
+    F: Fn(&str) -> Fut,
+    Fut: Future<Output = Result<RegDate, String>>
+{
     stream_data: StreamData,
     params: DetectorParams,
-    checker: T
+    reg_date_loader: RegDateLoader<F, Fut>
 }
 
-impl <T: RegDateLoader> Detector<T> {
-    pub fn new(params: DetectorParams, checker: T) -> Self {
+impl <F, Fut> Detector<F, Fut>
+where
+    F: Fn(&str) -> Fut,
+    Fut: Future<Output = Result<RegDate, String>>
+{
+    pub fn new(params: DetectorParams, loader: RegDateLoader<F, Fut>) -> Self {
         Detector {
             params,
-            checker,
+            reg_date_loader: loader,
             stream_data: StreamData::new()
         }
     }
 
-    pub async fn process_messages(&mut self, mut actions: Vec<ChatAction>) -> Vec<ProcessingResult> {
+    pub async fn process_messages(&mut self, mut actions: Vec<ChatAction>) -> Result<Vec<ProcessingResult>, String> {
         actions.sort_unstable_by_key(|action| {
             match action {
                 ChatAction::Message { 
@@ -58,7 +68,7 @@ impl <T: RegDateLoader> Detector<T> {
 
         self
             .stream_data
-            .process_messages(&self.params, &mut self.checker, actions)
+            .process_messages(&self.params, &mut self.reg_date_loader, actions)
             .await
     }
 
