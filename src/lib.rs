@@ -1,46 +1,40 @@
 use std::collections::HashMap;
 use author_data::Reason;
+use reg_date_checker::RegDateChecker;
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
-use serde::{Deserialize, Serialize};
 
 pub mod chat_action;
 pub mod detector_params;
+pub mod reg_date;
+pub mod reg_date_checker;
 mod author_data;
 mod message_data;
 mod stream_data;
 mod emoji;
 
-#[derive(Deserialize, Serialize)]
 pub struct ProcessingResult {
     pub message_id: String,
     pub author: String,
-    pub menu_param: String
+    pub menu_param: String,
+    pub reason: Reason
 }
 
-impl ProcessingResult {
-    fn new(message_id: String, author: String, menu_param: String) -> Self {
-        ProcessingResult {
-            message_id,
-            author,
-            menu_param
-        }
-    }
-}
-
-pub struct Detector {
+pub struct Detector<T: RegDateChecker> {
     stream_data: StreamData,
-    params: DetectorParams
+    params: DetectorParams,
+    checker: T
 }
 
-impl Detector {
-    pub fn new(params: DetectorParams) -> Self {
+impl <T: RegDateChecker> Detector<T> {
+    pub fn new(params: DetectorParams, checker: T) -> Self {
         Detector {
             params,
+            checker,
             stream_data: StreamData::new()
         }
     }
 
-    pub fn process_messages(&mut self, mut actions: Vec<ChatAction>) -> Vec<ProcessingResult> {
+    pub async fn process_messages(&mut self, mut actions: Vec<ChatAction>) -> Vec<ProcessingResult> {
         actions.sort_unstable_by_key(|action| {
             match action {
                 ChatAction::Message { 
@@ -54,13 +48,18 @@ impl Detector {
                 ChatAction::Support { 
                     author: _, 
                     timestamp 
+                } => *timestamp,
+                ChatAction::RetractedMessage {
+                    author: _,
+                    timestamp
                 } => *timestamp
             }
         });
 
         self
             .stream_data
-            .process_messages(&self.params, actions)
+            .process_messages(&self.params, &mut self.checker, actions)
+            .await
     }
 
     pub fn set_slow_mode(&mut self, delay: u32) {

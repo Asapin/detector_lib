@@ -2,12 +2,13 @@ use std::borrow::Cow;
 
 use super::{detector_params::DetectorParams, message_data::MessageData};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Reason {
     SlowMode,
     TooFast(u32),
     TooLong(f32),
-    Similar
+    Similar,
+    RetractedMessage
 }
 
 pub struct AuthorData {

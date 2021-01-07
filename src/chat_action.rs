@@ -1,4 +1,3 @@
-use vec1::Vec1;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -16,10 +15,14 @@ pub enum ChatAction {
         author: String,
         timestamp: u64,
         content: String,
-        badges: Option<Vec1<Badges>>,
+        badges: Option<Vec<Badges>>,
         context_params: String
     },
     Support {
+        author: String,
+        timestamp: u64,
+    },
+    RetractedMessage {
         author: String,
         timestamp: u64,
     }

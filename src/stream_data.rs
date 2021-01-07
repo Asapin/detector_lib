@@ -1,5 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use crate::{ProcessingResult, author_data::Reason};
+use crate::{ProcessingResult, author_data::Reason, reg_date_checker::RegDateChecker};
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
 
 pub struct StreamData {
@@ -19,9 +19,10 @@ impl StreamData {
        }
     }
 
-    pub fn process_messages(
+    pub async fn process_messages<T: RegDateChecker>(
         &mut self,
         detector_params: &DetectorParams,
+        reg_date_checker: &mut T,
         messages: Vec<ChatAction>
     ) -> Vec<ProcessingResult> {
         let mut result = Vec::new();
@@ -39,24 +40,35 @@ impl StreamData {
                         continue;
                     }
 
-                    if self.authors_to_report.contains_key(&author) {
-                        result.push(ProcessingResult::new(id, author, context_params));
+                    if let Some(reason) = self.authors_to_report.get(&author) {
+                        result.push(ProcessingResult {
+                            message_id: id,
+                            author,
+                            menu_param: context_params,
+                            reason: reason.clone()
+                        });
                         continue;
                     }
 
                     let timestamp = timestamp / 1_000;
                     let cleaned_content = detector_params.strip_message_from_emoji(&content);
-                    match self.authors.get_mut(&author) {
-                        Some(author_data) => {
-                            if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                                self.authors_to_report.insert(author.clone(), reason);
-                                result.push(ProcessingResult::new(id, author, context_params));
+
+                    if let Some(author_data) = self.authors.get_mut(&author) {
+                        if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
+                            let reg_date = reg_date_checker.check(&author).await;
+                            if detector_params.acc_too_young(&reg_date) {
+                                self.authors_to_report.insert(author.clone(), reason.clone());
+                                result.push(ProcessingResult {
+                                    message_id: id,
+                                    author,
+                                    menu_param: context_params,
+                                    reason
+                                });
                             }
                         }
-                        None => {
-                            let author_data = AuthorData::new(content, timestamp);
-                            self.authors.insert(author, author_data);
-                        }
+                    } else {
+                        let author_data = AuthorData::new(content, timestamp);
+                        self.authors.insert(author, author_data);
                     }
                 },
                 ChatAction::Support { 
@@ -65,6 +77,19 @@ impl StreamData {
                 } => {
                     self.authors_to_report.remove(&author);
                     self.superchated_authors.insert(author);
+                },
+                ChatAction::RetractedMessage {
+                    author,
+                    timestamp: _,
+                } => {
+                    if let Some(_) = self.authors_to_report.get(&author) {
+                        continue;
+                    }
+
+                    let reg_date = reg_date_checker.check(&author).await;
+                    if detector_params.acc_too_young(&reg_date) {
+                        self.authors_to_report.insert(author, Reason::RetractedMessage);
+                    }
                 }
             }
         }

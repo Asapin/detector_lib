@@ -7,7 +7,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vec1 = { version = "^1", features = ["serde"] }
 serde = { version = "^1", features = ["derive"] }
 regex = "^1"
 strsim = "^0"
+async-trait = "^0.1"

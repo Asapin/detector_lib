@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
-use crate::emoji::RegexPatterns;
+use crate::{emoji::RegexPatterns, reg_date::RegDate};
 
 pub struct TextFieldDescriptor {
     pub name: String,
@@ -63,6 +63,33 @@ impl TextFieldDescriptor {
             step: 1
         }
     }
+
+    pub fn min_reg_date_year() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "min_reg_date_year".to_string(),
+            min: 2000,
+            max: 2100,
+            step: 1
+        }
+    }
+
+    pub fn min_reg_date_month() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "min_reg_date_month".to_string(),
+            min: 1,
+            max: 12,
+            step: 1
+        }
+    }
+
+    pub fn min_reg_date_day() -> TextFieldDescriptor {
+        TextFieldDescriptor {
+            name: "min_reg_date_day".to_string(),
+            min: 1,
+            max: 31,
+            step: 1
+        }
+    }
 }
 
 #[derive(Deserialize, Serialize)]
@@ -74,6 +101,7 @@ pub struct DetectorParams {
     similarity_min_message_length: u32,
     avg_length_threshold: u32,
     avg_length_message_count: u32,
+    min_reg_date: RegDate,
     #[serde(skip, default = "DetectorParams::regex")]
     regex_patterns: RegexPatterns,
 }
@@ -89,6 +117,7 @@ impl DetectorParams {
             similarity_min_message_length: 10,
             avg_length_threshold: 15,
             avg_length_message_count: 5,
+            min_reg_date: RegDate::default(),
             regex_patterns: patterns,
         }
     }
@@ -99,7 +128,8 @@ impl DetectorParams {
         similarity_message_count: u32,
         similarity_min_message_length: u32,
         avg_length_threshold: u32,
-        avg_length_message_count: u32
+        avg_length_message_count: u32,
+        min_reg_date: RegDate
     ) -> Self {
         let patterns = RegexPatterns::new();
 
@@ -110,6 +140,7 @@ impl DetectorParams {
             similarity_min_message_length,
             avg_length_threshold,
             avg_length_message_count,
+            min_reg_date,
             regex_patterns: patterns,
         }
     }
@@ -133,6 +164,10 @@ impl DetectorParams {
 
     pub fn should_check_message(&self, message_len: u32) -> bool {
         message_len != 0 && message_len >= self.similarity_min_message_length
+    }
+
+    pub fn acc_too_young(&self, reg_date: &RegDate) -> bool {
+        reg_date >= &self.min_reg_date
     }
 
     pub fn strip_message_from_emoji<'t>(&self, message: &'t str) -> Cow<'t, str> {
