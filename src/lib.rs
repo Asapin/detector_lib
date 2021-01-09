@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use author_data::Reason;
-use futures::Future;
-use reg_date::RegDate;
-use reg_date_loader::RegDateLoader;
+use reg_date_loader::{CachedRegDateLoader, RegDateLoader};
 use self::{chat_action::ChatAction, detector_params::DetectorParams, stream_data::StreamData};
 
 pub mod chat_action;
@@ -21,26 +19,18 @@ pub struct ProcessingResult {
     pub reason: Reason
 }
 
-pub struct Detector<F, Fut>
-where
-    F: Fn(&str) -> Fut,
-    Fut: Future<Output = Result<Option<RegDate>, String>>
-{
+pub struct Detector {
     stream_data: StreamData,
     params: DetectorParams,
-    reg_date_loader: RegDateLoader<F, Fut>
+    reg_date_loader: CachedRegDateLoader
 }
 
-impl <F, Fut> Detector<F, Fut>
-where
-    F: Fn(&str) -> Fut,
-    Fut: Future<Output = Result<Option<RegDate>, String>>
-{
-    pub fn new(params: DetectorParams, loader_fn: F) -> Self {
-        let loader = RegDateLoader::new(params.min_reg_date_copy(), loader_fn);
+impl Detector {
+    pub fn new(params: DetectorParams, loader: Box<dyn RegDateLoader>) -> Self {
+        let cached_loader = CachedRegDateLoader::new(params.min_reg_date_copy(), loader);
         Detector {
             params,
-            reg_date_loader: loader,
+            reg_date_loader: cached_loader,
             stream_data: StreamData::new()
         }
     }

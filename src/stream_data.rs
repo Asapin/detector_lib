@@ -1,7 +1,6 @@
 use std::collections::{HashMap, HashSet};
-use futures::Future;
 
-use crate::{ProcessingResult, author_data::Reason, reg_date::RegDate, reg_date_loader::RegDateLoader};
+use crate::{ProcessingResult, author_data::Reason, reg_date_loader::CachedRegDateLoader};
 use super::{author_data::AuthorData, chat_action::ChatAction, detector_params::DetectorParams};
 
 pub struct StreamData {
@@ -21,16 +20,12 @@ impl StreamData {
        }
     }
 
-    pub async fn process_messages<F, Fut>(
+    pub async fn process_messages(
         &mut self,
         detector_params: &DetectorParams,
-        reg_date_loader: &mut RegDateLoader<F, Fut>,
+        reg_date_loader: &mut CachedRegDateLoader,
         messages: Vec<ChatAction>
-    ) -> Result<Vec<ProcessingResult>, String>
-    where
-        F: Fn(&str) -> Fut,
-        Fut: Future<Output = Result<Option<RegDate>, String>>
-    {
+    ) -> Result<Vec<ProcessingResult>, String> {
         let mut result = Vec::new();
         for message in messages.into_iter() {
             match message {

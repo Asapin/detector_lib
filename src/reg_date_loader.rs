@@ -1,28 +1,24 @@
 use std::collections::HashMap;
-use futures::Future;
-
+use async_trait::async_trait;
 use crate::reg_date::RegDate;
 
-pub struct RegDateLoader<F, Fut>
-where
-    F: Fn(&str) -> Fut,
-    Fut: Future<Output = Result<Option<RegDate>, String>>
-{
-    cache: HashMap<String, RegDate>,
-    default_reg_date: RegDate,
-    load_callback: F 
+#[async_trait]
+pub trait RegDateLoader {
+    async fn load(&self, author: &str) -> Result<Option<RegDate>, String>;
 }
 
-impl <F, Fut> RegDateLoader<F, Fut>
-where
-    F: Fn(&str) -> Fut,
-    Fut: Future<Output = Result<Option<RegDate>, String>>
-{
-    pub fn new(default_reg_date: RegDate, callback: F) -> Self {
-        RegDateLoader {
+pub struct CachedRegDateLoader {
+    cache: HashMap<String, RegDate>,
+    default_reg_date: RegDate,
+    loader: Box<dyn RegDateLoader>
+}
+
+impl CachedRegDateLoader {
+    pub fn new(default_reg_date: RegDate, loader: Box<dyn RegDateLoader>) -> Self {
+        CachedRegDateLoader {
             cache: HashMap::with_capacity(100),
             default_reg_date,
-            load_callback: callback,
+            loader
         }
     }
 
@@ -31,7 +27,7 @@ where
             return Ok(reg_date.clone());
         }
 
-        let reg_date = (self.load_callback)(author)
+        let reg_date = self.loader.load(author)
             .await?
             .unwrap_or_else(|| self.default_reg_date.clone());
         self.cache.insert(author.to_string(), reg_date.clone());
