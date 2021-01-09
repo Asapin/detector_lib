@@ -24,7 +24,7 @@ pub struct ProcessingResult {
 pub struct Detector<F, Fut>
 where
     F: Fn(&str) -> Fut,
-    Fut: Future<Output = Result<RegDate, String>>
+    Fut: Future<Output = Result<Option<RegDate>, String>>
 {
     stream_data: StreamData,
     params: DetectorParams,
@@ -34,9 +34,10 @@ where
 impl <F, Fut> Detector<F, Fut>
 where
     F: Fn(&str) -> Fut,
-    Fut: Future<Output = Result<RegDate, String>>
+    Fut: Future<Output = Result<Option<RegDate>, String>>
 {
-    pub fn new(params: DetectorParams, loader: RegDateLoader<F, Fut>) -> Self {
+    pub fn new(params: DetectorParams, loader_fn: F) -> Self {
+        let loader = RegDateLoader::new(params.min_reg_date_copy(), loader_fn);
         Detector {
             params,
             reg_date_loader: loader,
@@ -77,6 +78,7 @@ where
     }
 
     pub fn update_params(&mut self, params: DetectorParams) {
+        self.reg_date_loader.update_default_reg_date(params.min_reg_date_copy());
         self.params = params;
         self.stream_data.clear_authors_to_report();
     }

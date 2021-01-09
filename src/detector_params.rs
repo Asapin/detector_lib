@@ -201,4 +201,8 @@ impl DetectorParams {
     pub fn avg_length_message_count(&self) -> (u32, TextFieldDescriptor) {
         (self.avg_length_message_count, TextFieldDescriptor::avg_length_message_count())
     }
+
+    pub fn min_reg_date_copy(&self) -> RegDate {
+        self.min_reg_date.clone()
+    }
 }

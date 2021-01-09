@@ -29,7 +29,7 @@ impl StreamData {
     ) -> Result<Vec<ProcessingResult>, String>
     where
         F: Fn(&str) -> Fut,
-        Fut: Future<Output = Result<RegDate, String>>
+        Fut: Future<Output = Result<Option<RegDate>, String>>
     {
         let mut result = Vec::new();
         for message in messages.into_iter() {
