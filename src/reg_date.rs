@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RegDate {
-    year: u16,
-    month: u8,
-    day: u8
+    pub year: u16,
+    pub month: u8,
+    pub day: u8
 }
 
 impl RegDate {

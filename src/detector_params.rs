@@ -202,6 +202,18 @@ impl DetectorParams {
         (self.avg_length_message_count, TextFieldDescriptor::avg_length_message_count())
     }
 
+    pub fn min_reg_date_year(&self) -> (u16, TextFieldDescriptor) {
+        (self.min_reg_date.year, TextFieldDescriptor::min_reg_date_year())
+    }
+
+    pub fn min_reg_date_month(&self) -> (u8, TextFieldDescriptor) {
+        (self.min_reg_date.month, TextFieldDescriptor::min_reg_date_month())
+    }
+
+    pub fn min_reg_date_day(&self) -> (u8, TextFieldDescriptor) {
+        (self.min_reg_date.day, TextFieldDescriptor::min_reg_date_day())
+    }
+
     pub fn min_reg_date_copy(&self) -> RegDate {
         self.min_reg_date.clone()
     }
