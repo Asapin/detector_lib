@@ -22,15 +22,14 @@ pub struct ProcessingResult {
 pub struct Detector {
     stream_data: StreamData,
     params: DetectorParams,
-    reg_date_loader: CachedRegDateLoader
+    // reg_date_loader: CachedRegDateLoader
 }
 
 impl Detector {
-    pub fn new(params: DetectorParams, loader: Box<dyn RegDateLoader>) -> Self {
-        let cached_loader = CachedRegDateLoader::new(params.min_reg_date_copy(), loader);
+    pub fn new(params: DetectorParams) -> Self {
+        // let cached_loader = CachedRegDateLoader::new(params.min_reg_date_copy(), loader);
         Detector {
             params,
-            reg_date_loader: cached_loader,
             stream_data: StreamData::new()
         }
     }
@@ -59,7 +58,7 @@ impl Detector {
 
         self
             .stream_data
-            .process_messages(&self.params, &mut self.reg_date_loader, actions)
+            .process_messages(&self.params, actions)
             .await
     }
 
@@ -68,7 +67,7 @@ impl Detector {
     }
 
     pub fn update_params(&mut self, params: DetectorParams) {
-        self.reg_date_loader.update_default_reg_date(params.min_reg_date_copy());
+        // self.reg_date_loader.update_default_reg_date(params.min_reg_date_copy());
         self.params = params;
         self.stream_data.clear_authors_to_report();
     }

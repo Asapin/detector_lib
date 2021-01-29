@@ -23,7 +23,7 @@ impl StreamData {
     pub async fn process_messages(
         &mut self,
         detector_params: &DetectorParams,
-        reg_date_loader: &mut CachedRegDateLoader,
+        // reg_date_loader: &mut CachedRegDateLoader,
         messages: Vec<ChatAction>
     ) -> Result<Vec<ProcessingResult>, String> {
         let mut result = Vec::new();
@@ -56,8 +56,8 @@ impl StreamData {
 
                     if let Some(author_data) = self.authors.get_mut(&author) {
                         if let Some(reason) = author_data.check_message(timestamp, cleaned_content, self.slow_mode, detector_params) {
-                            let reg_date = reg_date_loader.load_reg_date(&author).await?;
-                            if detector_params.acc_too_young(&reg_date) {
+                            // let reg_date = reg_date_loader.load_reg_date(&author).await?;
+                            // if detector_params.acc_too_young(&reg_date) {
                                 self.authors_to_report.insert(author.clone(), reason.clone());
                                 result.push(ProcessingResult {
                                     message_id: id,
@@ -65,7 +65,7 @@ impl StreamData {
                                     menu_param: context_params,
                                     reason
                                 });
-                            }
+                            // }
                         }
                     } else {
                         let author_data = AuthorData::new(content, timestamp);
@@ -87,10 +87,10 @@ impl StreamData {
                         continue;
                     }
 
-                    let reg_date = reg_date_loader.load_reg_date(&author).await?;
-                    if detector_params.acc_too_young(&reg_date) {
-                        self.authors_to_report.insert(author, Reason::RetractedMessage);
-                    }
+                    // let reg_date = reg_date_loader.load_reg_date(&author).await?;
+                    // if detector_params.acc_too_young(&reg_date) {
+                        // self.authors_to_report.insert(author, Reason::RetractedMessage);
+                    // }
                 }
             }
         }
