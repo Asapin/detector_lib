@@ -34,7 +34,7 @@ impl Detector {
         }
     }
 
-    pub async fn process_messages(&mut self, mut actions: Vec<ChatAction>) -> Result<Vec<ProcessingResult>, String> {
+    pub fn process_messages(&mut self, mut actions: Vec<ChatAction>) -> Result<Vec<ProcessingResult>, String> {
         actions.sort_unstable_by_key(|action| {
             match action {
                 ChatAction::Message { 
@@ -59,7 +59,6 @@ impl Detector {
         self
             .stream_data
             .process_messages(&self.params, actions)
-            .await
     }
 
     pub fn set_slow_mode(&mut self, delay: u32) {

@@ -20,7 +20,7 @@ impl StreamData {
        }
     }
 
-    pub async fn process_messages(
+    pub fn process_messages(
         &mut self,
         detector_params: &DetectorParams,
         // reg_date_loader: &mut CachedRegDateLoader,
